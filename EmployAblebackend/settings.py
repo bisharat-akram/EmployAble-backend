@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+import os
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-4klwso(96$khc0#7pcdoug4jr2#+30g1n%1pi7_%7x++-+f20v
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+AUTH_USER_MODEL = "user.User"
 
 # Application definition
 
@@ -37,7 +38,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Local Apps
+    'user',
+
+    #  Third Party integrations
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_standardized_errors',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'configs.responses.SuccessJResponse',
+    ),
+    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
+}
+
+DRF_STANDARDIZED_ERRORS = {"EXCEPTION_FORMATTER_CLASS": "configs.exception_handler.MyExceptionFormatter"}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,11 +95,14 @@ WSGI_APPLICATION = 'EmployAblebackend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['EMPA_DB_NAME'],
+        'USER': os.environ['EMPA_USERNAME'],
+        'PASSWORD': os.environ['EMPA_PASSWORD'],
+        'HOST': os.environ['EMPA_HOSTNAME'],
+        'PORT': os.environ['EMPA_PORT'],
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
