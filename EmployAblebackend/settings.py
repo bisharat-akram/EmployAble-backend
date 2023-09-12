@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-4klwso(96$khc0#7pcdoug4jr2#+30g1n%1pi7_%7x++-+f20v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*",]
 AUTH_USER_MODEL = "user.User"
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_standardized_errors',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -59,9 +60,14 @@ REST_FRAMEWORK = {
 
 DRF_STANDARDIZED_ERRORS = {"EXCEPTION_FORMATTER_CLASS": "configs.exception_handler.MyExceptionFormatter"}
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

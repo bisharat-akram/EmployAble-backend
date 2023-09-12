@@ -46,10 +46,10 @@ class GoogleLoginView(APIView):
 
     def post(self, request):
         """ Method to create google users in database """
-        google_access_token = request.data['access_token']
-        google_user_info_url = "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,birthdays"
-        headers = {'Authorization': f'Bearer {google_access_token}'}
         try:
+            google_access_token = request.data['access_token']
+            google_user_info_url = "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,birthdays"
+            headers = {'Authorization': f'Bearer {google_access_token}'}
             response = requests.get(google_user_info_url, headers = headers)
             if response.status_code == 200:
                 response = response.json()
