@@ -26,7 +26,11 @@ class UserSignUPView(APIView):
             )
             user_obj.set_password(request.data['password'])
             user_obj.save()
-            return Response(UserSerializer(user_obj).data)
+            user_data = UserSerializer(user_obj).data
+            refresh_token = RefreshToken.for_user(user_obj)
+            user_data['access'] = str(refresh_token.access_token)
+            user_data['refresh'] = str(refresh_token)
+            return Response(user_data)
         except Exception as e:
             raise ValidationError(e)
         
