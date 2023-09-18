@@ -7,4 +7,7 @@ urlpatterns = [
     path('google-login/', GoogleLoginView.as_view(), name="signup_for_a_user"),
     path('login/', TokenObtainPairView.as_view(), name="get_token_with_email_password"),
     path('me', GetUserView.as_view(), name="get_current_user_data"),
+    path('jobs', GetJobsView.as_view(), name="get_jobs_list"),
+    path('skills', GetSkillsView.as_view(), name="get_skills_list"),
+    path('profile', GetProfileView.as_view(), name="get_profile_view")
 ]

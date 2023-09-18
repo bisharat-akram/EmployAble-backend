@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from .serializers import UserSerializer
+from .serializers import *
 from .models import User
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -26,6 +27,8 @@ class UserSignUPView(APIView):
             )
             user_obj.set_password(request.data['password'])
             user_obj.save()
+            if user_obj.user_type == 1: # create user profile object if user is client type
+                UserProfile.objects.create(user = user_obj)
             user_data = UserSerializer(user_obj).data
             refresh_token = RefreshToken.for_user(user_obj)
             user_data['access'] = str(refresh_token.access_token)
@@ -87,3 +90,26 @@ class GoogleLoginView(APIView):
             raise ValidationError(e)
 
 
+class GetJobsView(ListAPIView):
+    """ View to get list of jobs """
+
+    permission_classes = (AllowAny,)
+    serializer_class = JobsSerializer
+    queryset = Jobs.objects.all()
+
+class GetSkillsView(ListAPIView):
+    """ View to get list of jobs """
+    
+    permission_classes = (AllowAny,)
+    serializer_class = SkillsSerializer
+    queryset = Skills.objects.all()
+
+class GetProfileView(RetrieveAPIView):
+    """ View to get user profile """
+
+    permission_classes = (IsAuthenticated, )
+    serializer_class = UserProfileSerializer
+    lookup_field = None
+
+    def get_object(self):
+        return self.request.user.user_profile
