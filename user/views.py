@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -104,7 +104,7 @@ class GetSkillsView(ListAPIView):
     serializer_class = SkillsSerializer
     queryset = Skills.objects.all()
 
-class GetProfileView(RetrieveAPIView):
+class GetProfileView(RetrieveAPIView, UpdateAPIView):
     """ View to get user profile """
 
     permission_classes = (IsAuthenticated, )
@@ -113,3 +113,42 @@ class GetProfileView(RetrieveAPIView):
 
     def get_object(self):
         return self.request.user.user_profile
+    
+    def update(self, request, *args, **kwargs):
+        """ Method to update the user profile """
+        
+        user_data = request.data.get('user')
+        if user_data:
+            request.data.pop('user')
+            User.objects.filter(id = request.user.id).update(**user_data)
+        
+        interested_jobs = request.data.get('interested_jobs')
+        skills = request.data.get('skills')
+
+        if interested_jobs:
+            request.data.pop('interested_jobs')
+            request.user.user_profile.interested_jobs.set(interested_jobs)
+        
+        if skills:
+            request.data.pop('skills')
+            request.user.user_profile.skills.set(skills)
+        
+        if len(request.data.keys() > 0):
+            UserProfile.objects.filter(id = self.request.user.user_profile.id).update(**request.data)
+        return Response(UserProfileSerializer(UserProfile.objects.filter(id = self.request.user.user_profile.id).first()).data)
+    
+class EmploymentView(DestroyAPIView, CreateAPIView):
+    """ view to delete / add employment history """
+    permission_classes = (IsAuthenticated, )
+    serializer_class = EmploymentSerializer
+    
+    def get_queryset(self):
+        return Employment.objects.filter(user_profile__user__id = self.request.user.id)
+    
+class EducationView(DestroyAPIView, CreateAPIView):
+    """ view to delete / add education history """
+    permission_classes = (IsAuthenticated, )
+    serializer_class = EducationSerializer
+
+    def get_queryset(self):
+        return Education.objects.filter(user_profile__user__id = self.request.user.id)

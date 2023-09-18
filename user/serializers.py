@@ -22,17 +22,25 @@ class SkillsSerializer(serializers.ModelSerializer):
 class EmploymentSerializer(serializers.ModelSerializer):
     """ serializer to serialize employment model object """
 
+    def create(self, validated_data):
+        validated_data["user_profile"] = self.context['request'].user.user_profile
+        return super().create(validated_data)
     class Meta:
         model = Employment
         fields = "__all__"
+        read_only_fields = ("user_profile", )
 
 
 class EducationSerializer(serializers.ModelSerializer):
     """ serializer to serialize education model object """
 
+    def create(self, validated_data):
+        validated_data["user_profile"] = self.context['request'].user.user_profile
+        return super().create(validated_data)
     class Meta:
         model = Education
         fields = "__all__"
+        read_only_fields = ("user_profile", )
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """ Serializer to serializer user profile data """
