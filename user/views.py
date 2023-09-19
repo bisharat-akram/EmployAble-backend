@@ -79,6 +79,7 @@ class GoogleLoginView(APIView):
                         auth_type = 1
                     )
                     user_obj.save()
+                    UserProfile.objects.create(user = user_obj)
                     refresh_token = RefreshToken.for_user(user_obj)
                     return Response({
                         "access": str(refresh_token.access_token),
