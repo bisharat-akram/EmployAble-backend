@@ -117,26 +117,28 @@ class GetProfileView(RetrieveAPIView, UpdateAPIView):
     
     def update(self, request, *args, **kwargs):
         """ Method to update the user profile """
-        
-        user_data = request.data.get('user')
-        if user_data:
-            request.data.pop('user')
-            User.objects.filter(id = request.user.id).update(**user_data)
-        
-        interested_jobs = request.data.get('interested_jobs')
-        skills = request.data.get('skills')
+        try:
+            user_data = request.data.get('user')
+            if user_data:
+                request.data.pop('user')
+                User.objects.filter(id = request.user.id).update(**user_data)
 
-        if interested_jobs:
-            request.data.pop('interested_jobs')
-            request.user.user_profile.interested_jobs.set(interested_jobs)
-        
-        if skills:
-            request.data.pop('skills')
-            request.user.user_profile.skills.set(skills)
-        
-        if len(request.data.keys() > 0):
-            UserProfile.objects.filter(id = self.request.user.user_profile.id).update(**request.data)
-        return Response(UserProfileSerializer(UserProfile.objects.filter(id = self.request.user.user_profile.id).first()).data)
+            interested_jobs = request.data.get('interested_jobs')
+            skills = request.data.get('skills')
+
+            if interested_jobs:
+                request.data.pop('interested_jobs')
+                request.user.user_profile.interested_jobs.set(interested_jobs)
+
+            if skills:
+                request.data.pop('skills')
+                request.user.user_profile.skills.set(skills)
+
+            if len(request.data.keys()) > 0:
+                UserProfile.objects.filter(id = self.request.user.user_profile.id).update(**request.data)
+            return Response(UserProfileSerializer(UserProfile.objects.filter(id = self.request.user.user_profile.id).first()).data)
+        except Exception as e:
+            raise ValidationError(e)
     
 class EmploymentView(DestroyAPIView, CreateAPIView):
     """ view to delete / add employment history """
