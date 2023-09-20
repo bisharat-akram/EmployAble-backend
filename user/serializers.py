@@ -45,10 +45,18 @@ class EducationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """ Serializer to serializer user profile data """
     user = UserSerializer()
-    interested_jobs = JobsSerializer(many = True)
-    skills = SkillsSerializer(many = True)
+    interested_jobs = serializers.SerializerMethodField()
+    skills = serializers.SerializerMethodField()
     employment_history = serializers.SerializerMethodField()
     education_history = serializers.SerializerMethodField()
+
+    def get_interested_jobs(self, obj):
+        """ method to get jobs ids """
+        return list(obj.interested_jobs.all().values_list("id", flat=True))
+
+    def get_skills(self, obj):
+        """ method to get skills ids """
+        return list(obj.skills.all().values_list("id", flat=True))
 
     def get_employment_history(self, obj):
         """ method to get employment history for a user profile """
