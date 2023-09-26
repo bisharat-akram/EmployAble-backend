@@ -155,3 +155,27 @@ class EducationView(DestroyAPIView, CreateAPIView):
 
     def get_queryset(self):
         return Education.objects.filter(user_profile__user__id = self.request.user.id)
+    
+
+class GetProfileListView(APIView):
+    """ Class to get list of user profiles """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        """ method to user profiles """
+        queryset = {}
+
+        if request.GET.get('skills'):
+            queryset['skills__in'] = request.GET.get('skills').split(",")
+
+        if request.GET.get('interested_jobs'):
+            queryset['interested_jobs__in'] = request.GET.get('interested_jobs').split(",")
+        
+        if request.GET.get('prior_highest_education'):
+            queryset['prior_highest_education'] = request.GET.get('prior_highest_education')
+
+        if request.GET.get('search'):
+            queryset['description__icontains'] = request.GET.get('search')
+
+        serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(**queryset), many = True)
+        return Response(serialized_user_profiles.data)
