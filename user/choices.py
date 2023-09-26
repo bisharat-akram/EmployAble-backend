@@ -18,6 +18,14 @@ education_level_choices=(
 )
 
 degree_type=(
-    (1, "High School"),
-    (2, "Bachelor's"),
+    (1, "Some college"),
+    (2, "Associate`s"),
+    (3, "Bachelor`s"),
+    (4, "Master`s"),
+    (5, "Doctoral"),
+)
+
+criminal_conviction_choices=(
+    (1, "misdemeanor"),
+    (2, "felony")
 )

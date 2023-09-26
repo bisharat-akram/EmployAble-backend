@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from .choices import user_type_choices, user_auth_choices, education_level_choices, degree_type
+from .choices import user_type_choices, user_auth_choices, education_level_choices, degree_type, criminal_conviction_choices
 from django.utils.translation import gettext_lazy as _
 from .manager import UserManager
 from .validators import phone_validator
@@ -56,7 +56,7 @@ class Skills(models.Model):
 class UserProfile(models.Model):
     """ Model to store profile details of a user """
     user = models.OneToOneField(User, related_name="user_profile", related_query_name="user_profile", on_delete=models.CASCADE)
-    field_name = models.TextField(null=True)
+    criminal_conviction = models.IntegerField(choices = criminal_conviction_choices, null=True, blank=True)
     description = models.TextField(max_length = 1000, null=True)
     phone_number = models.CharField(max_length = 16, validators = [phone_validator], unique = True, null=True)
     interested_jobs = models.ManyToManyField(Jobs)
