@@ -7,6 +7,7 @@ from .serializers import *
 from .models import User
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 
 # Create your views here.
 class UserSignUPView(APIView):
@@ -176,6 +177,18 @@ class GetProfileListView(APIView):
 
         if request.GET.get('search'):
             queryset['description__icontains'] = request.GET.get('search')
-
-        serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(**queryset), many = True)
+        
+        if request.GET.get('education'):
+            education = request.GET.get('education')
+            serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(Q(**queryset) & Q(Q(education_history__university_name__icontains = education) | Q(education_history__major__icontains = education))), many = True)
+        else:
+            serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(**queryset), many = True)
         return Response(serialized_user_profiles.data)
+    
+class GetProfileDetailView(RetrieveAPIView):
+    """ Class to get profile detail view """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserProfileDetailSerializer
+
+    def get_object(self):
+        return UserProfile.objects.get(id = self.kwargs['pk'])

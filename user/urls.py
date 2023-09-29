@@ -11,6 +11,7 @@ urlpatterns = [
     path('skills', GetSkillsView.as_view(), name="get_skills_list"),
     path('profile', GetProfileView.as_view(), name="get_profile_view"),
     path('profiles', GetProfileListView.as_view(), name="get_profile_view"),
+    path('profiles/<int:pk>', GetProfileDetailView.as_view(), name="get_profile_view"),
     path('employment/<int:pk>', EmploymentView.as_view(), name="add/delete_employment"),
     path('employment/', EmploymentView.as_view(), name="add/delete_employment"),
     path('education/<int:pk>', EducationView.as_view(), name="add/delete_education"),
