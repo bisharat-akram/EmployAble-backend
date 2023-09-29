@@ -7,6 +7,7 @@ from .serializers import *
 from .models import User
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 
 # Create your views here.
 class UserSignUPView(APIView):
@@ -79,6 +80,7 @@ class GoogleLoginView(APIView):
                         auth_type = 1
                     )
                     user_obj.save()
+                    UserProfile.objects.create(user = user_obj)
                     refresh_token = RefreshToken.for_user(user_obj)
                     return Response({
                         "access": str(refresh_token.access_token),
@@ -116,26 +118,28 @@ class GetProfileView(RetrieveAPIView, UpdateAPIView):
     
     def update(self, request, *args, **kwargs):
         """ Method to update the user profile """
-        
-        user_data = request.data.get('user')
-        if user_data:
-            request.data.pop('user')
-            User.objects.filter(id = request.user.id).update(**user_data)
-        
-        interested_jobs = request.data.get('interested_jobs')
-        skills = request.data.get('skills')
+        try:
+            user_data = request.data.get('user')
+            if user_data:
+                request.data.pop('user')
+                User.objects.filter(id = request.user.id).update(**user_data)
 
-        if interested_jobs:
-            request.data.pop('interested_jobs')
-            request.user.user_profile.interested_jobs.set(interested_jobs)
-        
-        if skills:
-            request.data.pop('skills')
-            request.user.user_profile.skills.set(skills)
-        
-        if len(request.data.keys() > 0):
-            UserProfile.objects.filter(id = self.request.user.user_profile.id).update(**request.data)
-        return Response(UserProfileSerializer(UserProfile.objects.filter(id = self.request.user.user_profile.id).first()).data)
+            interested_jobs = request.data.get('interested_jobs')
+            skills = request.data.get('skills')
+
+            if interested_jobs:
+                request.data.pop('interested_jobs')
+                request.user.user_profile.interested_jobs.set(interested_jobs)
+
+            if skills:
+                request.data.pop('skills')
+                request.user.user_profile.skills.set(skills)
+
+            if len(request.data.keys()) > 0:
+                UserProfile.objects.filter(id = self.request.user.user_profile.id).update(**request.data)
+            return Response(UserProfileSerializer(UserProfile.objects.filter(id = self.request.user.user_profile.id).first()).data)
+        except Exception as e:
+            raise ValidationError(e)
     
 class EmploymentView(DestroyAPIView, CreateAPIView):
     """ view to delete / add employment history """
@@ -152,3 +156,39 @@ class EducationView(DestroyAPIView, CreateAPIView):
 
     def get_queryset(self):
         return Education.objects.filter(user_profile__user__id = self.request.user.id)
+    
+
+class GetProfileListView(APIView):
+    """ Class to get list of user profiles """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        """ method to user profiles """
+        queryset = {}
+
+        if request.GET.get('skills'):
+            queryset['skills__in'] = request.GET.get('skills').split(",")
+
+        if request.GET.get('interested_jobs'):
+            queryset['interested_jobs__in'] = request.GET.get('interested_jobs').split(",")
+        
+        if request.GET.get('prior_highest_education'):
+            queryset['prior_highest_education'] = request.GET.get('prior_highest_education')
+
+        if request.GET.get('search'):
+            queryset['description__icontains'] = request.GET.get('search')
+        
+        if request.GET.get('education'):
+            education = request.GET.get('education')
+            serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(Q(**queryset) & Q(Q(education_history__university_name__icontains = education) | Q(education_history__major__icontains = education))), many = True)
+        else:
+            serialized_user_profiles = UserProfileSerializer(UserProfile.objects.filter(**queryset), many = True)
+        return Response(serialized_user_profiles.data)
+    
+class GetProfileDetailView(RetrieveAPIView):
+    """ Class to get profile detail view """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserProfileDetailSerializer
+
+    def get_object(self):
+        return UserProfile.objects.get(id = self.kwargs['pk'])
