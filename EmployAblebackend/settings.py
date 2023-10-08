@@ -78,6 +78,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'EmployAblebackend.urls'
 
+STATIC_ROOT = "static/"
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
