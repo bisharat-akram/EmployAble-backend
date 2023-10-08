@@ -62,7 +62,7 @@ REST_FRAMEWORK = {
 DRF_STANDARDIZED_ERRORS = {"EXCEPTION_FORMATTER_CLASS": "configs.exception_handler.MyExceptionFormatter"}
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "*",
 ]
 
 MIDDLEWARE = [
