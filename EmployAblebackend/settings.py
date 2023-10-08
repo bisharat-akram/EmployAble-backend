@@ -79,7 +79,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'EmployAblebackend.urls'
 
-STATIC_ROOT = "static/"
+STATIC_ROOT = "static"
 
 TEMPLATES = [
     {
