@@ -63,7 +63,8 @@ DRF_STANDARDIZED_ERRORS = {"EXCEPTION_FORMATTER_CLASS": "configs.exception_handl
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://main.d21g61v83td32q.amplifyapp.com"
+    "https://main.d21g61v83td32q.amplifyapp.com",
+    "https://www.employable.life"
 ]
 
 MIDDLEWARE = [
