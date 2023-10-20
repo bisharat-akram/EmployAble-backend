@@ -8,6 +8,7 @@ from .models import User
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Q
+from .services import verify_token_from_google
 
 # Create your views here.
 class UserSignUPView(APIView):
@@ -56,38 +57,32 @@ class GoogleLoginView(APIView):
         """ Method to create google users in database """
         try:
             google_access_token = request.data['access_token']
-            google_user_info_url = "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,birthdays"
-            headers = {'Authorization': f'Bearer {google_access_token}'}
-            response = requests.get(google_user_info_url, headers = headers)
-            if response.status_code == 200:
-                response = response.json()
-                email = response['emailAddresses'][0]['value']
-                if User.objects.filter(email = email).exists():
-                    user_obj = User.objects.get(email = email)
-                    refresh_token = RefreshToken.for_user(user_obj)
-                    return Response({
-                        "access": str(refresh_token.access_token),
-                        "refresh": str(refresh_token)
-                    })
-                else:
-                    user_obj = User(
-                        email = response['emailAddresses'][0]['value'],
-                        first_name = response['names'][0]['givenName'],
-                        last_name = response['names'][0]['familyName'],
-                        password = "createdByGoogleAccount",
-                        user_type = 1,
-                        username = response['emailAddresses'][0]['value'],
-                        auth_type = 1
-                    )
-                    user_obj.save()
-                    UserProfile.objects.create(user = user_obj)
-                    refresh_token = RefreshToken.for_user(user_obj)
-                    return Response({
-                        "access": str(refresh_token.access_token),
-                        "refresh": str(refresh_token)
-                    })
+            user_info = verify_token_from_google(google_access_token)
+            email = user_info['email']
+            if User.objects.filter(email = email).exists():
+                user_obj = User.objects.get(email = email)
+                refresh_token = RefreshToken.for_user(user_obj)
+                return Response({
+                    "access": str(refresh_token.access_token),
+                    "refresh": str(refresh_token)
+                })
             else:
-                raise ValidationError(response.json())
+                user_obj = User(
+                    email = user_info['email'],
+                    first_name = user_info['given_name'],
+                    last_name = user_info['family_name'],
+                    password = "createdByGoogleAccount",
+                    user_type = 1,
+                    username = user_info['email'],
+                    auth_type = 1
+                )
+                user_obj.save()
+                UserProfile.objects.create(user = user_obj)
+                refresh_token = RefreshToken.for_user(user_obj)
+                return Response({
+                    "access": str(refresh_token.access_token),
+                    "refresh": str(refresh_token)
+                })
         except Exception as e:
             raise ValidationError(e)
 
